@@ -41,6 +41,16 @@ def disp_stagger():
     return stagger, circ_out
 
 
+
+# Creating Menubar
+menubar = Menu(root)
+file = Menu(menubar, tearoff=0)
+menubar.add_cascade(label='File', menu=file)
+file.add_command(label='Tracks', command=None)
+file.add_command(label='Vehicles', command=None)
+file.add_separator()
+file.add_command(label='Exit', command=root.destroy)
+
 trackWidthLabel = Label(root, text="Track Width")
 trackWidthLabel.grid(row=0, column=0)
 entry = ttk.Entry(root, width=20)
@@ -65,6 +75,7 @@ calcButton = ttk.Button(root, text="Calculate", command=disp_stagger)
 calcButton.grid(row=3, column=1)
 
 root.geometry("600x300")
+root.config(menu=menubar)
 root.mainloop()
 
 # run = True
