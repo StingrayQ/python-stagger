@@ -46,8 +46,8 @@ def disp_stagger():
 menubar = Menu(root)
 file = Menu(menubar, tearoff=0)
 menubar.add_cascade(label='File', menu=file)
-file.add_command(label='Tracks', command=None)
-file.add_command(label='Vehicles', command=None)
+file.add_command(label='Tracks (Coming Soon)', command=None)
+file.add_command(label='Vehicles (Coming Soon)', command=None)
 file.add_separator()
 file.add_command(label='Exit', command=root.destroy)
 
