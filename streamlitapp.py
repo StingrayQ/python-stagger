@@ -151,40 +151,162 @@ if 'selected_track' not in st.session_state:
 
 
 def simple_login():
-    st.title("🏁 Stagger Calculator Login")
+    st.title("🏁 Stagger Calculator")
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    # Create tabs for Login and Sign Up
+    tab1, tab2 = st.tabs(["Login", "Sign Up"])
 
-    with col2:
-        with st.form("login_form"):
-            st.markdown("### Login")
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            login_button = st.form_submit_button("Login")
+    with tab1:
+        # Existing login functionality
+        col1, col2, col3 = st.columns([1, 2, 1])
 
-            if login_button:
-                if username and password:
-                    try:
-                        user = db.authenticate_user(username, password)
-                        if user:
-                            st.session_state.authenticated = True
-                            st.session_state.user = user
-                            st.success(f"Welcome, {user['username']}!")
-                            st.rerun()
-                        else:
-                            st.error("Invalid credentials")
-                    except Exception as e:
-                        st.error(f"Login error: {e}")
-                else:
-                    st.warning("Please enter username and password")
+        with col2:
+            with st.form("login_form"):
+                st.markdown("### Login")
+                username = st.text_input("Username")
+                password = st.text_input("Password", type="password")
+                login_button = st.form_submit_button("Login")
 
-        # Demo credentials
-        with st.expander("🔍 Demo Account"):
-            st.info("Username: demo\nPassword: demo123")
+                if login_button:
+                    if username and password:
+                        try:
+                            user = db.authenticate_user(username, password)
+                            if user:
+                                st.session_state.authenticated = True
+                                st.session_state.user = user
+                                st.success(f"Welcome, {user['username']}!")
+                                st.rerun()
+                            else:
+                                st.error("Invalid username or password")
+                        except Exception as e:
+                            st.error(f"Login error: {e}")
+                    else:
+                        st.warning("Please enter username and password")
+
+            # Demo credentials
+            with st.expander("🔍 Demo Account"):
+                st.info("Username: demo\nPassword: demo123")
+
+    with tab2:
+        # New signup functionality
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+            with st.form("signup_form"):
+                st.markdown("### Create New Account")
+
+                new_username = st.text_input("Username", placeholder="Choose a username")
+                new_email = st.text_input("Email", placeholder="your.email@example.com")
+                new_password = st.text_input("Password", type="password", placeholder="Create a secure password")
+                confirm_password = st.text_input("Confirm Password", type="password",
+                                                 placeholder="Confirm your password")
+                team_name = st.text_input("Team Name", placeholder="Your racing team name")
+
+                signup_button = st.form_submit_button("Create Account")
+
+                if signup_button:
+                    # Validation
+                    errors = []
+
+                    # Check all fields are filled
+                    if not new_username or not new_email or not new_password or not team_name:
+                        errors.append("All fields are required")
+
+                    # Username validation
+                    if new_username and len(new_username) < 3:
+                        errors.append("Username must be at least 3 characters long")
+
+                    if new_username and not new_username.replace('_', '').replace('-', '').isalnum():
+                        errors.append("Username can only contain letters, numbers, hyphens, and underscores")
+
+                    # Email validation
+                    import re
+                    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                    if new_email and not re.match(email_pattern, new_email):
+                        errors.append("Please enter a valid email address")
+
+                    # Password validation
+                    if new_password and len(new_password) < 6:
+                        errors.append("Password must be at least 6 characters long")
+
+                    if new_password != confirm_password:
+                        errors.append("Passwords do not match")
+
+                    # Team name validation
+                    if team_name and len(team_name) < 2:
+                        errors.append("Team name must be at least 2 characters long")
+
+                    # If validation passes, create account
+                    if not errors:
+                        try:
+                            success, user_id, message = db.create_user(
+                                username=new_username,
+                                email=new_email,
+                                password=new_password,
+                                team_name=team_name
+                            )
+
+                            if success:
+                                st.success("✅ Account created successfully! Please login with your new credentials.")
+                                #st.balloons()  # Fun animation
+                                st.info("Switch to the Login tab to access your account.")
+                            else:
+                                st.error(f"❌ Account creation failed: {message}")
+
+                        except Exception as e:
+                            st.error(f"❌ Error creating account: {e}")
+                    else:
+                        # Display validation errors
+                        for error in errors:
+                            st.error(f"❌ {error}")
+
+
+
+
+
+def validate_signup_data(username, email, password, confirm_password, team_name):
+
+    errors = []
+
+    # Required fields
+    if not all([username, email, password, team_name]):
+        errors.append("All fields are required")
+        return errors  # Return early if basic validation fails
+
+    # Username validation
+    if len(username) < 3:
+        errors.append("Username must be at least 3 characters long")
+
+    elif not username.replace('_', '').replace('-', '').isalnum():
+        errors.append("Username can only contain letters, numbers, hyphens, and underscores")
+
+    # Email validation
+    import re
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        errors.append("Please enter a valid email address")
+    elif len(email) > 100:
+        errors.append("Email address is too long")
+
+    # Password validation
+    if len(password) < 6:
+        errors.append("Password must be at least 6 characters long")
+
+    elif password != confirm_password:
+        errors.append("Passwords do not match")
+
+    # Team name validation
+    if len(team_name) < 2:
+        errors.append("Team name must be at least 2 characters long")
+    elif len(team_name) > 100:
+        errors.append("Team name is too long")
+
+    return errors
+
 
 
 def calculate_stagger_smart_angle(track_width, corner_length_ft, inside_tire_circumference, banking_degrees=0):
-    """Calculate stagger with smart angle selection and track type determination"""
+
     try:
         # Estimate corner angle based on corner length
         if corner_length_ft < 350:
@@ -410,7 +532,7 @@ def vehicle_management():
         vehicles = db.get_user_vehicles(st.session_state.user['id'])
 
         if vehicles:
-            
+
             vehicle_objects = []
             for v in vehicles:
                 if v[1] and v[2]:  # Has required data
